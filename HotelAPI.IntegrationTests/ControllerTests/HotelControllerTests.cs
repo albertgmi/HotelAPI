@@ -8,9 +8,12 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography.Xml;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace HotelAPI.IntegrationTests.ControllerTests
 {
@@ -36,7 +39,7 @@ namespace HotelAPI.IntegrationTests.ControllerTests
 
 
                         services
-                         .AddDbContext<HotelDbContext>(options => options.UseInMemoryDatabase("RestaurantDb"));
+                         .AddDbContext<HotelDbContext>(options => options.UseInMemoryDatabase("HotelDb"));
 
                     });
                 });
@@ -74,10 +77,10 @@ namespace HotelAPI.IntegrationTests.ControllerTests
             result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         }
         [Theory]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(143)]
-        [InlineData(231)]
+        [InlineData(21)]
+        [InlineData(334)]
+        [InlineData(213)]
+        [InlineData(554)]
         public async Task GetById_ForCorrectData_ReturnsOkStatusCode(int hotelId)
         {
             // act
@@ -103,11 +106,169 @@ namespace HotelAPI.IntegrationTests.ControllerTests
         public async Task Create_ForValidData_ReturnsCreatedStatusCode(CreateHotelDto dto)
         {
             // assert
+            var hotel = new Hotel()
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Address = new Address()
+                {
+                    City = dto.City,
+                    Street = dto.Street
+                },
+                ContactNumber = dto.ContactNumber
+            };
+            var query = dto.JsonHttpContent();          
+            // act
+            var result = await _client.PostAsync("/api/hotel", query);
+            var createdHotel = GetHotelFromDb(dto.Name, dto.Description);
+            // arrange
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
+            createdHotel.Name.Should().Be(hotel.Name);
+            createdHotel.Description.Should().Be(hotel.Description);
+            createdHotel.ContactNumber.Should().Be(hotel.ContactNumber);
+        }
+        [Theory]
+        [ClassData(typeof(CreateHotelInvalidData))]
+        public async Task Create_ForInvalidData_ReturnsBadRequestStatusCode(CreateHotelDto dto)
+        {
+            // assert
             var query = dto.JsonHttpContent();
             // act
             var result = await _client.PostAsync("/api/hotel", query);
             // arrange
-            result.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        }
+        [Theory]
+        [InlineData(int.MaxValue)]
+        [InlineData(-32)]
+        [InlineData(0)]
+        public async Task Delete_ForNonExistingHotel_ReturnsNotFoundStatusCode(int hotelId)
+        {
+            // act
+            var result = await _client.DeleteAsync("/api/hotel/" + hotelId);
+            // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+        }
+        [Fact]
+        public async Task Delete_ForHotelOwner_ReturnsNoContentStatusCode()
+        {
+            // arrange
+            var hotel = new Hotel()
+            {
+                Name = "TestHotel",
+                CreatedById = 1,
+                Rating = 2
+            };
+            SeedHotel(hotel);
+            // act
+            var result = await _client.DeleteAsync("/api/hotel/" + hotel.Id);
+            // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent);
+        }
+        [Fact]
+        public async Task Delete_ForNotHotelOwner_ReturnsForbiddenStatusCode()
+        {
+            // arrange
+            var hotel = new Hotel()
+            {
+                Name = "TestHotel2",
+                CreatedById = 31,
+                Rating = 4
+            };
+            SeedHotel(hotel);
+            // act
+            var result = await _client.DeleteAsync("/api/hotel/" + hotel.Id);
+            // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+        }
+        [Theory]
+        [ClassData(typeof(UpdateHotelValidData))]
+        public async Task Update_ForHotelOwner_ReturnsNoContentStatusCode(UpdateHotelDto updateDto)
+        {
+            // arrange
+            var hotel = new Hotel()
+            {
+                Name = "TestHotel3",
+                CreatedById = 1,
+                Rating = 2
+            };
+            SeedHotel(hotel);
+            var httpContent = updateDto.JsonHttpContent();
+
+            // act
+            var result = await _client.PutAsync("api/hotel/"+hotel.Id, httpContent);
+            var updatedHotelFromDb = GetHotelFromDb(updateDto.Name, updateDto.Description);
+
+            // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.NoContent);
+            updatedHotelFromDb.Name.Should().Be(updateDto.Name);
+            updatedHotelFromDb.Description.Should().Be(updateDto.Description);
+        }
+        [Theory]
+        [ClassData(typeof(UpdateForNotOwnerData))]
+        public async Task Update_ForNotHotelOwner_ReturnsForbiddenStatusCode(UpdateHotelDto updateDto)
+        {
+            // arrange
+            var hotel = new Hotel()
+            {
+                Name = "TestHotel3",
+                CreatedById = 3,
+                Rating = 2
+            };
+            SeedHotel(hotel);
+            var httpContent = updateDto.JsonHttpContent();
+
+            // act
+            var result = await _client.PutAsync("api/hotel/" + hotel.Id, httpContent);
+
+            // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.Forbidden);
+        }
+        [Theory]
+        [ClassData(typeof(UpdateHotelInvalidData))]
+        public async Task Update_ForInvalidData_ReturnsBadRequestStatusCode(UpdateHotelDto updateDto)
+        {
+            // arrange
+            var hotel = new Hotel()
+            {
+                Name = "TestHotel3",
+                CreatedById = 1,
+                Rating = 2
+            };
+            SeedHotel(hotel);
+            var httpContent = updateDto.JsonHttpContent();
+
+            // act
+            var result = await _client.PutAsync("api/hotel/" + hotel.Id, httpContent);
+
+            // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        }
+        [Fact]
+        public void GetOwner_ForValidId_ReturnsOkStatusCode()
+        {
+            // arrange
+            // act
+            // assert
+        }
+        private Hotel GetHotelFromDb(string name, string description)
+        {
+            var scopeFactory = _factory.Services.GetService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetService<HotelDbContext>();
+            var hotel = dbContext.Hotels
+                .Where(h => h.Name == name
+                    && h.Description == description)
+                .FirstOrDefault();
+            return hotel;
+        }
+        private void SeedHotel(Hotel hotel)
+        {
+            var scopeFactory = _factory.Services.GetService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetService<HotelDbContext>();
+            dbContext.Hotels.Add(hotel);
+            dbContext.SaveChanges();
         }
     }
 }
