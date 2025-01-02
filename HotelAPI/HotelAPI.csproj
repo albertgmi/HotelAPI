@@ -6,9 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Authorizations\" />
-    <Folder Include="Exceptions\" />
     <Folder Include="JWTstuff\" />
     <Folder Include="Middlewares\" />
     <Folder Include="Migrations\" />
