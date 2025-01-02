@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Models\Validators\UserValdators\" />
+    <Folder Include="Models\Validators\ReservationValidators\" />
+    <Folder Include="Models\Validators\RoomValidators\" />
     <Folder Include="Services\" />
     <Folder Include="Profiles\" />
     <Folder Include="wwwroot\" />
