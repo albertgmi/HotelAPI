@@ -20,23 +20,28 @@ namespace HotelAPI.IntegrationTests.ControllerTests
         private readonly WebApplicationFactory<Program> _factory;
         public HotelControllerTests(WebApplicationFactory<Program> factory)
         {
-            _factory = factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
+            _factory = factory
+                .WithWebHostBuilder(builder =>
                 {
-                    var dbContextOptions = services
-                        .SingleOrDefault(service => service.ServiceType == typeof(DbContextOptions<HotelDbContext>));
+                    builder.ConfigureServices(services =>
+                    {
+                        var dbContextOptions = services
+                            .SingleOrDefault(service => service.ServiceType == typeof(DbContextOptions<HotelDbContext>));
 
-                    services.Remove(dbContextOptions);
+                        services.Remove(dbContextOptions);
 
-                    services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
-                    services.AddMvc(x => x.Filters.Add(new FakeUserFilter()));
+                        services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
 
-                    services.AddDbContext<HotelDbContext>(options 
-                        => options.UseInMemoryDatabase("HotelAPIDb"));
+                        services.AddMvc(option => option.Filters.Add(new FakeUserFilter()));
+
+
+                        services
+                         .AddDbContext<HotelDbContext>(options => options.UseInMemoryDatabase("RestaurantDb"));
+
+                    });
                 });
-            });
-            _client = factory.CreateClient();
+
+            _client = _factory.CreateClient();
         }
         [Theory]
         [InlineData("PageNumber=1&PageSize=5")]

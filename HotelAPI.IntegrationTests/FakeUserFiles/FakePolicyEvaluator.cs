@@ -12,7 +12,15 @@ namespace HotelAPI.IntegrationTests.FakeUserFiles
         public Task<AuthenticateResult> AuthenticateAsync(AuthorizationPolicy policy, HttpContext context)
         {
             var claimsPrincipal = new ClaimsPrincipal();
-            var ticket = new AuthenticationTicket(claimsPrincipal, "TestTicket");
+
+            claimsPrincipal.AddIdentity(new ClaimsIdentity(
+                new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "1"),
+                    new Claim(ClaimTypes.Role, "Admin"),
+                }));
+
+            var ticket = new AuthenticationTicket(claimsPrincipal, "Test");
             var result = AuthenticateResult.Success(ticket);
             return Task.FromResult(result);
         }
