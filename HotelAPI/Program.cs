@@ -1,12 +1,26 @@
-var builder = WebApplication.CreateBuilder(args);
+using HotelAPI.Entities;
+using HotelAPI.Seeders;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var app = builder.Build();
+// Entity Framework stuff
 
-// Configure the HTTP request pipeline.
+builder.Services.AddDbContext<HotelDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("HotelsConnectionString"));
+});
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+builder.Services.AddScoped<IHotelSeeder, HotelSeeder>();
+
+var app = builder.Build();
 
 app.UseHttpsRedirection();
 
