@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "HotelManagementAPI": {
+    "HotelAPI": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
