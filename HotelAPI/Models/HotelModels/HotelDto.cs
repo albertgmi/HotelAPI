@@ -1,4 +1,6 @@
-﻿namespace HotelAPI.Models.HotelModels
+﻿using HotelAPI.Models.RoomModels;
+
+namespace HotelAPI.Models.HotelModels
 {
     public class HotelDto
     {

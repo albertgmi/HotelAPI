@@ -8,6 +8,7 @@ using HotelAPI.Services.EmailServiceFolder;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using HotelAPI.Services.UserServiceFolder;
 
 namespace HotelAPI.Services.ReservationServiceFolder
 {

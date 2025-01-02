@@ -12,6 +12,10 @@ using QuestPDF.Infrastructure;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using HotelAPI.Services.UserServiceFolder;
+using HotelAPI.Services.ReportServiceFolder;
+using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Fluent;
 
 namespace HotelAPI.Services.HotelServiceFolder
 {
