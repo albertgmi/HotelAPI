@@ -6,8 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-    <Folder Include="Profiles\" />
+    <Folder Include="Services\RoomServiceFolder\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
