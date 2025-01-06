@@ -30,6 +30,7 @@ using HotelAPI.Models.UserModels;
 using HotelAPI.Models.Validators.UserValdators;
 using HotelAPI.Authorizations.ReservationAuthorizations;
 using HotelAPI.Authorizations.HotelAuthorizations;
+using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -50,7 +51,7 @@ builder.Services.AddScoped<IHotelSeeder, HotelSeeder>();
 
 builder.Services.AddControllers().AddFluentValidation();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddSwaggerGen();
 
 var authenticationSettings = new AuthenticationSettings();
@@ -139,3 +140,5 @@ var updater = scope.ServiceProvider.GetService<IUpdateService>();
 updater.Update(dbContext);
 
 app.Run();
+
+public partial class Program { }
