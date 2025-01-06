@@ -8,12 +8,9 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography.Xml;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace HotelAPI.IntegrationTests.ControllerTests
 {
@@ -77,10 +74,10 @@ namespace HotelAPI.IntegrationTests.ControllerTests
             result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         }
         [Theory]
-        [InlineData(21)]
-        [InlineData(334)]
+        [InlineData(1)]
+        [InlineData(32)]
+        [InlineData(68)]
         [InlineData(213)]
-        [InlineData(554)]
         public async Task GetById_ForCorrectData_ReturnsOkStatusCode(int hotelId)
         {
             // act
@@ -244,12 +241,14 @@ namespace HotelAPI.IntegrationTests.ControllerTests
             // assert
             result.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
         }
-        [Fact]
-        public void GetOwner_ForValidId_ReturnsOkStatusCode()
+        [Theory]
+        [InlineData(595)]
+        public async Task GetOwner_ForValidId_ReturnsOkStatusCode(int hotelId)
         {
-            // arrange
             // act
+            var result = await _client.GetAsync($"/api/hotel/{hotelId}/owner");
             // assert
+            result.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         }
         private Hotel GetHotelFromDb(string name, string description)
         {
