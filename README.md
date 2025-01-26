@@ -34,6 +34,7 @@ The application includes an automatic seeder that populates the database with sa
 The hotel owner can generate three types of reports: financial reports, occupancy reports, and guest reports. Each report contains important statistics relevant to hotel operations.
 ### **Email notifications**
 When a user makes a new reservation, a confirmation email is sent to the email address associated with their registered account.
+
 ---
 
 ## Architecture & Design
