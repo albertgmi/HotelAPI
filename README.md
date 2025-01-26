@@ -30,7 +30,10 @@ The API supports pagination for data-heavy endpoints, providing:
 
 ### **Automatic Database Seeder**  
 The application includes an automatic seeder that populates the database with sample data when the application starts, providing a ready-to-use environment for testing.
-
+### **PDF report generation**
+The hotel owner can generate three types of reports: financial reports, occupancy reports, and guest reports. Each report contains important statistics relevant to hotel operations.
+### **Email notifications**
+When a user makes a new reservation, a confirmation email is sent to the email address associated with their registered account.
 ---
 
 ## Architecture & Design
@@ -56,10 +59,10 @@ The following technologies are used in the project:
 - **DTO Mapping**: Simplifies data transfer between API layers.
 - **Fluent Validation**: For input validation.
 - **JWT Authentication**: Secures endpoints with JSON Web Tokens.
-- **NLog**: For logging API requests and errors.
 - **Swagger**: For interactive API documentation and testing.
 - **Bogus**: Used to generate fake data for testing purposes.
-
+- **MailKit**: For sending and receiving emails via SMTP.
+- **QuestPDF**: Used for generating high-quality PDF reports.
 ---
 
 ## Integration Tests
